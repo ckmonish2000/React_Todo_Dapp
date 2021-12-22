@@ -49,7 +49,7 @@ function App() {
         const todo = [...Todoz]
         for (let i = 1; i <= count; i++) {
           const data = await contract.get_task(i)
-          todo.push({ name: data[0], id: i })
+          todo.push({ name: data[0], id: i, completed: data[1] })
           setTodoz(todo)
         }
       }
@@ -82,7 +82,10 @@ function App() {
       <ul>
         {
           Todoz?.map(v => {
-            return <li key={Math.random()}>{v?.name}</li>
+            return <li key={Math.random()}>
+              <span style={{ textDecoration: v?.completed ? "line-through" : "" }}>{v?.name}</span>
+              <button>{v?.completed ? "Redo" : "Done"}</button>
+            </li>
           })
         }
 
