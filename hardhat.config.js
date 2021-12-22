@@ -23,6 +23,7 @@ module.exports = {
   },
   networks: {
     hardhat: {
+      // remember enrich material symbol scatter nut normal quick develop manage journey aunt
       chainId: 1337
     }
   }
