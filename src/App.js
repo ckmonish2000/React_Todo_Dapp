@@ -10,8 +10,7 @@ function App() {
   const contract_address = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
 
   async function requestAccount() {
-    // await window.ethereum.request({ method: 'eth_requestAccounts' });
-    await window.ethereum.enable()
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
   }
 
   const fetch_count = async () => {
@@ -21,6 +20,7 @@ function App() {
       try {
         const data = await contract.count()
         setcount(parseInt(data?._hex, 16))
+        get_task(parseInt(data?._hex, 16))
       } catch (err) {
         console.log(err)
       }
@@ -28,7 +28,7 @@ function App() {
   }
 
   const Add_task = async () => {
-    if (task_name !== "") return
+    if (task_name === "") return
 
     if (typeof window.ethereum !== "undefined") {
       await requestAccount()
@@ -36,28 +36,38 @@ function App() {
       const signer = await provider.getSigner()
       const contract = new ethers.Contract(contract_address, Todos.abi, signer)
       const transaction = await contract.create_task(task_name)
-      await transaction.wait()
+      transaction.wait().then(() => { settask_name("") }).catch(err => console.log(err))
     }
   }
 
-  const get_task = () => {
+  const get_task = async () => {
     if (count === 0) return
-
     if (typeof window.ethereum !== "undefined") {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const contract = new ethers.Contract(contract_address, Todos.abi, provider)
-      // try {
-      //   for (let i = 0; i <= count; i++) {
-      //     contract.get
-      //   }
-
+      try {
+        const todo = [...Todoz]
+        for (let i = 1; i <= count; i++) {
+          const data = await contract.get_task(i)
+          todo.push({ name: data[0], id: i })
+          setTodoz(todo)
+        }
+      }
+      catch (err) {
+        console.log("get_task err:", err)
+      }
     }
   }
 
   useEffect(() => {
-    if (count === 0) fetch_count()
+    fetch_count()
   }, [])
 
+  useEffect(() => {
+    get_task()
+  }, [count])
+
+  console.log(Todoz)
   return (
     <div>
       <h1>Todo : {count}</h1>
@@ -69,6 +79,14 @@ function App() {
 
       <button onClick={Add_task}>Add</button>
       <button onClick={requestAccount}>login</button>
+      <ul>
+        {
+          Todoz?.map(v => {
+            return <li key={Math.random()}>{v?.name}</li>
+          })
+        }
+
+      </ul>
     </div>
   );
 }
