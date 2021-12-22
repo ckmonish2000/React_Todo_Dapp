@@ -36,7 +36,9 @@ function App() {
       const signer = await provider.getSigner()
       const contract = new ethers.Contract(contract_address, Todos.abi, signer)
       const transaction = await contract.create_task(task_name)
-      transaction.wait().then(() => { settask_name("") }).catch(err => console.log(err))
+      transaction.wait()
+        .then(() => { settask_name("") })
+        .catch(err => console.log(err))
     }
   }
 
@@ -46,7 +48,7 @@ function App() {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const contract = new ethers.Contract(contract_address, Todos.abi, provider)
       try {
-        const todo = [...Todoz]
+        const todo = []
         for (let i = 1; i <= count; i++) {
           const data = await contract.get_task(i)
           todo.push({ name: data[0], id: i, completed: data[1] })
@@ -67,6 +69,26 @@ function App() {
     get_task()
   }, [count])
 
+
+  const toggle = async (_id) => {
+    if (!_id) return
+
+    if (typeof window.ethereum !== "undefined") {
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
+      const contract = new ethers.Contract(contract_address, Todos.abi, signer)
+      try {
+        const transaction = await contract.toggle_state(_id)
+        transaction.wait()
+          .then(() => { get_task() })
+          .catch(err => console.log(err))
+      }
+      catch (err) {
+        console.log(err)
+      }
+    }
+  }
+
   console.log(Todoz)
   return (
     <div>
@@ -84,7 +106,9 @@ function App() {
           Todoz?.map(v => {
             return <li key={Math.random()}>
               <span style={{ textDecoration: v?.completed ? "line-through" : "" }}>{v?.name}</span>
-              <button>{v?.completed ? "Redo" : "Done"}</button>
+              <button
+                onClick={() => toggle(v?.id)}
+              >{v?.completed ? "Redo" : "Done"}</button>
             </li>
           })
         }
