@@ -4,7 +4,11 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 
 contract Todos {
-    uint public count = 0;
+    uint public count = 1;
+
+    constructor() public {
+        console.log("hello");
+    }
 
     struct Todo{
         string name;
