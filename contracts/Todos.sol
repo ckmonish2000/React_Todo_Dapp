@@ -31,4 +31,9 @@ contract Todos {
         Todo storage todo = tasklist[_id];
         todo.name = _text;
     }
+
+    function get_task(uint _id) public view returns(Todo memory){
+        Todo storage todo = tasklist[_id];
+        return todo;
+    }
 }
